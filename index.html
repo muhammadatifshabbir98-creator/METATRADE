@@ -2,155 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetaTrade Global | Elite Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaTrade Global | Trade Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase Libraries v8 for perfect compatibility -->
+    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { background: #05070a; color: #e2e8f0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100dvh; margin: 0; }
-        .glass-card { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .auth-input { background: #1a1f29; border: 1px solid #2d3748; padding: 14px; border-radius: 12px; width: 100%; color: white; outline: none; }
-        #appTerminal { display: none; height: 100dvh; flex-direction: column; padding: 8px; }
-        .timer-badge { position: absolute; bottom: 10px; right: 10px; background: #eab308; color: black; padding: 5px 15px; border-radius: 50px; font-weight: 800; display: none; z-index: 100; font-size: 12px; }
-        .btn-grad-green { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); }
-        .btn-grad-red { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
-        #loadingScreen { position: fixed; inset: 0; background: #05070a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .loader-spin { width: 35px; height: 35px; border: 3px solid #1a1f29; border-top: 3px solid #eab308; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .profile-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-        .logout-btn { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); transition: transform 0.2s ease; }
-        #blockScreen { display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(5,7,10,0.98); align-items: center; justify-content: center; text-align: center; padding: 24px; }
-    </style>
 </head>
-<body>
+<body class="bg-[#05070a] text-gray-200 min-h-screen font-sans">
 
-    <div id="blockScreen" class="flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2">Account Suspended</h1>
-        <p class="text-sm text-gray-400 max-w-xs">Your terminal access has been restricted by the Master Admin. Please contact support.</p>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-[#05070a] z-50 flex flex-col items-center justify-center gap-4">
+        <div class="w-12 h-12 border-4 border-t-yellow-500 border-white/10 rounded-full animate-spin"></div>
+        <p class="text-xs uppercase tracking-widest text-yellow-500 font-bold" id="loadingText">Connecting to Server...</p>
     </div>
 
-    <div id="loadingScreen">
-        <div class="loader-spin"></div>
-        <p class="mt-3 text-[9px] font-bold text-yellow-500 uppercase tracking-widest">Verifying Session...</p>
-    </div>
-
-    <div id="authSection" class="h-full items-center justify-center p-4" style="display:none;">
-        <div class="glass-card w-full max-w-sm p-8 rounded-[32px]">
-            <h1 class="text-3xl font-black text-center mb-8 uppercase italic">MetaTrade</h1>
-            <div class="flex bg-black/40 p-1.5 rounded-2xl mb-8">
-                <button onclick="switchAuth('login')" id="loginTab" class="flex-1 py-3 text-sm font-bold">Login</button>
-                <button onclick="switchAuth('reg')" id="regTab" class="flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl">Registration</button>
+    <!-- Auth Container (Login / Register) -->
+    <div id="authScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-[#111827] border border-white/5 p-8 rounded-3xl w-full max-w-sm shadow-2xl">
+            <h1 class="text-2xl font-black text-center text-white uppercase tracking-wider mb-2">MetaTrade</h1>
+            <p class="text-xs text-center text-yellow-500 font-bold uppercase tracking-widest mb-6" id="authSubtitle">Login to Account</p>
+            
+            <div class="space-y-4">
+                <input type="email" id="authEmail" placeholder="Email Address" class="w-full bg-[#1a1f29] border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 text-sm">
+                <input type="password" id="authPassword" placeholder="Password" class="w-full bg-[#1a1f29] border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 text-sm">
+                
+                <button onclick="handleAuth()" id="authBtn" class="w-full py-4 bg-yellow-500 text-black font-black rounded-xl uppercase tracking-wider text-sm transition hover:bg-yellow-400">Sign In</button>
+                
+                <p class="text-center text-xs text-gray-400 font-medium">
+                    <span id="toggleText">Don't have an account?</span> 
+                    <button onclick="toggleAuthMode()" id="toggleBtn" class="text-yellow-500 font-bold ml-1 hover:underline">Register</button>
+                </p>
             </div>
-            <input type="email" id="userEmail" placeholder="Email" class="auth-input mb-4">
-            <input type="password" id="userPass" placeholder="Password" class="auth-input mb-6">
-            <button onclick="handleAuth()" id="authBtn" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl uppercase">Registration</button>
         </div>
     </div>
 
-    <div id="appTerminal">
-        <header class="flex justify-between items-center mb-2 px-1">
-            <div class="flex items-center gap-2">
-                <div onclick="showM('settingsM')" id="userInitial" class="w-10 h-10 rounded-full bg-yellow-500 border-2 border-white/10 flex items-center justify-center text-black font-extrabold cursor-pointer text-sm shadow-lg shadow-yellow-500/20">?</div>
-                <div><p class="text-[7px] text-gray-500 font-bold uppercase">Balance</p><h1 id="balanceDisp" class="text-lg font-black text-white">$0.00</h1></div>
+    <!-- Main Trading Dashboard -->
+    <div id="dashboardScreen" class="hidden p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center bg-[#111827] border border-white/5 p-5 rounded-2xl">
+            <div>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Welcome Trader</p>
+                <h2 id="userDisplayEmail" class="text-sm font-bold text-white">loading...</h2>
             </div>
-            <div class="flex gap-1.5">
-                <button onclick="showM('depM')" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase">Deposit</button>
-                <button onclick="showM('witM')" class="bg-white/5 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-white/10">Withdraw</button>
-            </div>
+            <button onclick="logout()" class="text-xs bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-gray-400 font-bold px-4 py-2 rounded-xl border border-white/5 transition">Logout</button>
         </header>
 
-        <div class="mb-2 px-1">
-            <select id="assetSelect" onchange="loadChart(this.value)" class="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-yellow-500 font-bold text-[11px] outline-none">
-                <optgroup label="FOREX MAJOR">
-                    <option value="FX:EURUSD">EUR/USD (98%)</option><option value="FX:GBPUSD">GBP/USD (95%)</option>
-                    <option value="FX:USDJPY">USD/JPY (92%)</option><option value="FX:AUDUSD">AUD/USD (90%)</option>
-                </optgroup>
-            </select>
+        <!-- Balance Card -->
+        <div class="bg-gradient-to-br from-[#111827] to-[#161f30] border border-white/5 p-6 rounded-3xl flex justify-between items-center shadow-xl">
+            <div>
+                <p class="text-xs text-yellow-500 font-black uppercase tracking-wider mb-1">Available Balance</p>
+                <h1 class="text-3xl font-black text-white" id="userBalance">$0.00</h1>
+            </div>
+            <button onclick="openDepositModal()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider transition shadow-lg shadow-yellow-500/10">Deposit</button>
         </div>
 
-        <main class="relative flex-grow rounded-[28px] overflow-hidden bg-black mb-2 border border-white/5 shadow-2xl">
-            <div id="tv_chart" class="h-full w-full"></div>
-            <div id="tradeTimer" class="timer-badge">⏱ <span id="timerText">00:00</span></div>
-        </main>
-
-        <footer class="glass-card p-4 rounded-[32px]">
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="bg-black/40 p-2.5 rounded-2xl border border-white/5">
-                    <span class="text-[8px] text-gray-500 font-bold uppercase block ml-1">Amount ($)</span>
-                    <input id="tradeAmt" type="number" value="10" class="bg-transparent outline-none font-black text-white text-base w-full px-1">
+        <!-- Trade Control Station -->
+        <div class="bg-[#111827] border border-white/5 p-6 rounded-3xl space-y-4">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider">Execute Fast Trade</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1">Amount ($)</label>
+                    <input type="number" id="tradeAmount" value="10" class="w-full bg-[#1a1f29] border border-white/10 p-3.5 rounded-xl text-white font-bold outline-none focus:border-yellow-500 text-sm">
                 </div>
-                <div class="bg-black/40 p-2.5 rounded-2xl border border-white/5">
-                    <span class="text-[8px] text-gray-500 font-bold uppercase block ml-1">Time Duration</span>
-                    <select id="duration" class="bg-transparent font-black text-white text-base w-full outline-none">
-                        <option value="5">5 Sec</option><option value="15">15 Sec</option>
-                        <option value="30">30 Sec</option>
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1">Duration</label>
+                    <select class="w-full bg-[#1a1f29] border border-white/10 p-3.5 rounded-xl text-white font-bold outline-none text-sm">
+                        <option>30 Seconds</option>
+                        <option>60 Seconds</option>
                     </select>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="initTrade('UP')" class="btn-grad-green h-14 rounded-2xl font-black text-white uppercase text-sm tracking-widest">Call</button>
-                <button onclick="initTrade('DOWN')" class="btn-grad-red h-14 rounded-2xl font-black text-white uppercase text-sm tracking-widest">Put</button>
+            <div class="grid grid-cols-2 gap-4 pt-2">
+                <button onclick="runTrade('High')" class="bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-wider text-xs transition">Call (High)</button>
+                <button onclick="runTrade('Low')" class="bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl uppercase tracking-wider text-xs transition">Put (Low)</button>
             </div>
-        </footer>
-    </div>
-
-    <!-- Modals -->
-    <div id="settingsM" class="modal">
-        <div class="glass-card p-6 rounded-[35px] w-full max-w-sm relative">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xs font-black text-yellow-500 uppercase tracking-widest">User Profile</h2>
-                <button onclick="hideM('settingsM')" class="w-8 h-8 rounded-full bg-white/5 text-white border border-white/10 text-xl">&times;</button>
-            </div>
-            <div class="text-center mb-6">
-                <div id="modalInitial" class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto text-3xl font-black text-black mb-3">?</div>
-                <p id="modalEmail" class="text-white font-bold italic text-sm">Loading...</p>
-            </div>
-            <button onclick="auth.signOut().then(()=>location.reload())" class="logout-btn w-full py-4 text-white font-black rounded-2xl uppercase text-[10px]">Logout Account</button>
         </div>
     </div>
 
-    <div id="depM" class="modal">
-        <div class="glass-card p-8 rounded-[32px] w-full max-w-sm text-center">
-            <div id="dStep1">
-                <h2 class="text-xl font-black text-yellow-500 mb-6 uppercase">Deposit Funds</h2>
-                <input type="number" id="depAmtInput" placeholder="Enter PKR Amount" class="auth-input mb-6 text-center text-lg">
-                <button onclick="toDStep(2)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase">Next</button>
+    <!-- Deposit Modal -->
+    <div id="depositModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[#111827] border border-white/5 p-6 rounded-3xl w-full max-w-sm space-y-4 shadow-2xl relative">
+            <button onclick="closeDepositModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white font-bold text-xl">&times;</button>
+            <h2 class="text-lg font-black text-white uppercase tracking-wide">Deposit Funds</h2>
+            <p class="text-xs text-gray-400 leading-relaxed">Send payment to Easypaisa/JazzCash account and paste details below. <br><span class="text-yellow-500 font-bold">Rate: 1$ = 280 PKR</span></p>
+            
+            <div class="space-y-3 pt-2">
+                <input type="number" id="depAmount" placeholder="Amount in USD ($)" oninput="calcPkr(this.value)" class="w-full bg-[#1a1f29] border border-white/10 p-3.5 rounded-xl text-white outline-none text-sm">
+                <p class="text-xs font-bold text-right text-gray-400">Total: <span class="text-green-400" id="pkrLabel">0</span> PKR</p>
+                <input type="text" id="depName" placeholder="Your Account Name" class="w-full bg-[#1a1f29] border border-white/10 p-3.5 rounded-xl text-white outline-none text-sm">
+                <input type="text" id="depTxid" placeholder="Transaction ID (TXID)" class="w-full bg-[#1a1f29] border border-white/10 p-3.5 rounded-xl text-white outline-none text-sm">
+                <button onclick="submitDepositRequest()" class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-black rounded-xl uppercase tracking-wider text-xs transition">Submit Request</button>
             </div>
-            <div id="dStep2" class="hidden">
-                <p class="text-xs text-gray-400 mb-4">Send the PKR amount to the Admin account, then click button below.</p>
-                <button onclick="toDStep(3)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase mt-4">I Have Paid</button>
-            </div>
-            <div id="dStep3" class="hidden space-y-3">
-                <input type="text" id="depAccName" placeholder="Account Name" class="auth-input">
-                <input type="number" id="depActualAmt" placeholder="Sent Amount (PKR)" class="auth-input">
-                <input type="text" id="depTx" placeholder="TXID" class="auth-input">
-                <button onclick="submitFinalDep()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl uppercase">Submit</button>
-            </div>
-            <button onclick="hideM('depM')" class="mt-4 text-gray-500 text-[10px] font-bold uppercase">Cancel</button>
         </div>
     </div>
 
-    <div id="witM" class="modal">
-        <div class="glass-card p-8 rounded-[32px] w-full max-w-sm text-center">
-            <h2 class="text-xl font-black text-yellow-500 mb-6 uppercase">Withdraw</h2>
-            <div class="space-y-3 text-left">
-                <input type="number" id="witAmtPKR" placeholder="Amount (PKR)" class="auth-input">
-                <button onclick="submitWit()" class="w-full py-4 bg-white text-black font-black rounded-2xl uppercase mt-4">Confirm</button>
-            </div>
-            <button onclick="hideM('witM')" class="mt-4 text-gray-500 text-[10px] font-bold uppercase">Cancel</button>
-        </div>
-    </div>
-
-    <div id="resultM" class="modal"><div id="resultBox" class="bg-[#1a1f2e] p-10 rounded-[40px] text-center border border-white/10 w-80 shadow-2xl"></div></div>
-
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // UPDATED with your exact Firebase configuration from image 229463.jpg
+        // Realtime Database Config
         const firebaseConfig = {
             apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
             authDomain: "meta-trade-globel.firebaseapp.com",
@@ -161,155 +109,206 @@
             appId: "1:1087236988664:web:1c47339c55b7957953a50d"
         };
         
-        let auth, database, userData = null, mode = 'reg', chartLoaded = false;
-        let isFirebaseReady = false;
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            database = firebase.database(); // Initializing Realtime Database
-            isFirebaseReady = true;
+        let isSignUp = false;
+        let currentUserUid = localStorage.getItem('traderUid') || null;
 
-            auth.onAuthStateChanged(user => {
-                document.getElementById('loadingScreen').style.display = 'none'; 
-                if(user) {
-                    // Fetch user info and watch real-time balance updates
-                    database.ref('users/' + user.uid).on('value', snapshot => {
-                        userData = snapshot.val();
-                        if(userData) {
-                            if(userData.status === 'blocked') {
-                                document.getElementById('blockScreen').style.display = 'flex';
-                                document.getElementById('appTerminal').style.display = 'none';
-                                return;
-                            } else {
-                                document.getElementById('blockScreen').style.display = 'none';
-                            }
-                            document.getElementById('balanceDisp').innerText = "$" + (userData.balance || 0).toFixed(2);
-                            const initial = user.email[0].toUpperCase();
-                            document.getElementById('userInitial').innerText = initial;
-                            document.getElementById('modalInitial').innerText = initial;
-                            document.getElementById('modalEmail').innerText = user.email;
-                            document.getElementById('authSection').style.display = 'none';
-                            document.getElementById('appTerminal').style.display = 'flex';
-                            if(!chartLoaded) { loadChart('FX:EURUSD'); chartLoaded = true; }
-                        } else {
-                            // If user folder doesn't exist in Realtime Database, create a default one
-                            database.ref('users/' + user.uid).set({
-                                email: user.email,
-                                balance: 0,
-                                tradeMode: 'normal',
-                                status: 'active'
-                            });
-                        }
-                    });
-                } else {
-                    document.getElementById('authSection').style.display = 'flex';
-                    document.getElementById('appTerminal').style.display = 'none';
-                }
-            });
-        } catch(err) {
-            console.log("Firebase error bypassed for preview", err);
-        }
-
-        setTimeout(() => {
-            const loader = document.getElementById('loadingScreen');
-            if(loader && loader.style.display !== 'none') {
-                loader.style.display = 'none';
-                document.getElementById('authSection').style.display = 'flex';
+        // Session Check Initializer
+        window.onload = function() {
+            if(currentUserUid) {
+                checkUserSession(currentUserUid);
+            } else {
+                showAuth();
             }
-        }, 3000);
+        };
 
-        function showM(id) { document.getElementById(id).style.display = 'flex'; }
-        function hideM(id) { document.getElementById(id).style.display = 'none'; if(id==='depM') toDStep(1); }
-        function toDStep(s) { ['dStep1','dStep2','dStep3'].forEach(d => document.getElementById(d).classList.add('hidden')); document.getElementById('dStep'+s).classList.remove('hidden'); }
-
-        // UPDATED: Ab deposit request admin panel me dikhegi, balance direkt nahi barhega
-        async function submitFinalDep() {
-            const acc = document.getElementById('depAccName').value, amt = document.getElementById('depActualAmt').value, tx = document.getElementById('depTx').value;
-            if(!acc || !amt || !tx) return alert("Fill all fields");
-            const usd = parseFloat(amt) / 280;
-            
-            if(isFirebaseReady && auth.currentUser) {
-                const transactionId = "TXN" + Date.now();
-                await database.ref('transactions/' + transactionId).set({
-                    id: transactionId,
-                    uid: auth.currentUser.uid,
-                    type: 'Deposit',
-                    amount: usd,
-                    pkrAmount: amt,
-                    accountName: acc,
-                    txid: tx,
-                    user: auth.currentUser.email,
-                    status: 'Pending',
-                    timestamp: new Date().toLocaleString()
-                });
-                hideM('depM'); 
-                alert("Deposit request submitted! Waiting for Admin approval.");
-            }
+        function showAuth() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
         }
 
-        // UPDATED: Ab withdrawal request admin panel me dikhegi, admin ke approve karne par balance katega
-        async function submitWit() {
-            const amtPkr = parseFloat(document.getElementById('witAmtPKR').value);
-            if(!amtPkr) return alert("Fill all fields");
-            const usd = amtPkr / 280;
-            if(userData && usd > userData.balance) return alert("Low balance");
-            
-            if(isFirebaseReady && auth.currentUser) {
-                const transactionId = "TXN" + Date.now();
-                await database.ref('transactions/' + transactionId).set({
-                    id: transactionId,
-                    uid: auth.currentUser.uid,
-                    type: 'Withdraw',
-                    amount: usd,
-                    pkrAmount: amtPkr,
-                    user: auth.currentUser.email,
-                    status: 'Pending',
-                    timestamp: new Date().toLocaleString()
-                });
-                hideM('witM'); 
-                alert("Withdrawal request submitted! Waiting for Admin approval.");
-            }
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            document.getElementById('authSubtitle').innerText = isSignUp ? "Create New Account" : "Login to Account";
+            document.getElementById('authBtn').innerText = isSignUp ? "Sign Up" : "Sign In";
+            document.getElementById('toggleText').innerText = isSignUp ? "Already have an account?" : "Don't have an account?";
+            document.getElementById('toggleBtn').innerText = isSignUp ? "Login" : "Register";
         }
 
-        async function initTrade(type) {
-            const amt = parseFloat(document.getElementById('tradeAmt').value), dur = parseInt(document.getElementById('duration').value);
-            if(userData && amt > userData.balance || amt <= 0) return alert("Check balance");
-            
-            if(isFirebaseReady && auth.currentUser) {
-                // Deduct trade amount from Realtime Database balance
-                await database.ref('users/' + auth.currentUser.uid).update({ balance: userData.balance - amt });
-            }
-            document.getElementById('tradeTimer').style.display = 'block';
-            let l = dur;
-            let iv = setInterval(() => {
-                let m = Math.floor(l/60), s = l%60;
-                document.getElementById('timerText').innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
-                if(l <= 0) { clearInterval(iv); document.getElementById('tradeTimer').style.display = 'none'; showRes(amt); }
-                l--;
-            }, 1000);
-        }
-
-        function showRes(amt) {
-            const tradeMode = (userData && userData.tradeMode) ? userData.tradeMode : 'normal';
-            let win = tradeMode === 'profit' ? true : (tradeMode === 'loss' ? false : Math.random() > 0.5);
-            const p = amt * 1.82, box = document.getElementById('resultBox');
-            if(win) { 
-                if(isFirebaseReady && auth.currentUser) {
-                    database.ref('users/' + auth.currentUser.uid).update({ balance: userData.balance + p }); 
-                }
-                box.innerHTML = `<h2 class="text-green-500 font-black tracking-widest">PROFIT</h2><h1 class="text-4xl">+$${p.toFixed(2)}</h1>`;
-            } else { box.innerHTML = `<h2 class="text-red-500 font-black tracking-widest">LOSS</h2><h1 class="text-4xl">-$${amt.toFixed(2)}</h1>`; }
-            box.innerHTML += `<button onclick="hideM('resultM')" class="w-full bg-white/10 py-3 rounded-xl mt-6 font-bold uppercase text-xs">Continue</button>`;
-            showM('resultM');
-        }
-
-        function loadChart(s) { new TradingView.widget({ "autosize": true, "symbol": s, "interval": "1", "theme": "dark", "container_id": "tv_chart", "hide_top_toolbar": true, "hide_side_toolbar": true }); }
-        
+        // Authentication Handler (Login/Register via RTDB)
         async function handleAuth() {
-            const e = document.getElementById('userEmail').value, p = document.getElementById('userPass').value;
-            if(!isFirebaseReady) {
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('appTerminal').style.display = 'flex';
-                loadChart('FX:EURUSD');
-          
+            const email = document.getElementById('authEmail').value.trim().toLowerCase();
+            const password = document.getElementById('authPassword').value;
+
+            if(!email || !password) return alert("Please fill all fields!");
+
+            document.getElementById('loadingScreen').classList.remove('hidden');
+            document.getElementById('loadingText').innerText = "Authenticating...";
+
+            const cleanEmailKey = email.replace(/[.$#[\]]/g, "_"); // RTDB safe key conversion
+
+            if(isSignUp) {
+                // Check if user already exists
+                const snap = await database.ref('users').orderByChild('email').equalTo(email).once('value');
+                if(snap.exists()) {
+                    showAuth();
+                    return alert("Email already registered!");
+                }
+
+                // Create new user record
+                const newUid = 'uid_' + Math.random().toString(36).substr(2, 9);
+                const userData = {
+                    uid: newUid,
+                    email: email,
+                    password: password,
+                    balance: 0.00,
+                    tradeMode: 'normal',
+                    status: 'active'
+                };
+
+                await database.ref('users/' + newUid).set(userData);
+                loginSuccess(newUid);
+            } else {
+                // Login check
+                const snap = await database.ref('users').once('value');
+                let foundUid = null;
+                let isBlocked = false;
+
+                snap.forEach(child => {
+                    const u = child.val();
+                    if(u.email === email && u.password === password) {
+                        foundUid = child.key;
+                        if(u.status === 'blocked') isBlocked = true;
+                    }
+                });
+
+                if(isBlocked) {
+                    showAuth();
+                    return alert("This account is blocked by the Admin!");
+                }
+
+                if(foundUid) {
+                    loginSuccess(foundUid);
+                } else {
+                    showAuth();
+                    alert("Invalid Email or Password!");
+                }
+            }
+        }
+
+        function loginSuccess(uid) {
+            localStorage.setItem('traderUid', uid);
+            currentUserUid = uid;
+            checkUserSession(uid);
+        }
+
+        // Live User Dashboard Session Sync
+        function checkUserSession(uid) {
+            document.getElementById('loadingScreen').classList.remove('hidden');
+            
+            database.ref('users/' + uid).on('value', snapshot => {
+                const user = snapshot.val();
+                if(!user) {
+                    logout();
+                    return;
+                }
+
+                if(user.status === 'blocked') {
+                    alert("Your account has been blocked!");
+                    logout();
+                    return;
+                }
+
+                // Sync data directly to dashboard UI live
+                document.getElementById('userDisplayEmail').innerText = user.email;
+                document.getElementById('userBalance').innerText = "$" + parseFloat(user.balance || 0).toFixed(2);
+                
+                // Switch interface views smoothly
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('dashboardScreen').classList.remove('hidden');
+            }, err => {
+                logout();
+            });
+        }
+
+        // Live Manual Deposit System Control
+        function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
+        function closeDepositModal() { document.getElementById('depositModal').style.display = 'none'; }
+        function calcPkr(usd) { document.getElementById('pkrLabel').innerText = usd ? (parseFloat(usd) * 280).toLocaleString() : 0; }
+
+        async function submitDepositRequest() {
+            const amount = document.getElementById('depAmount').value;
+            const name = document.getElementById('depName').value.trim();
+            const txid = document.getElementById('depTxid').value.trim();
+            const email = document.getElementById('userDisplayEmail').innerText;
+
+            if(!amount || !name || !txid) return alert("Please fill out all receipt details!");
+
+            const txnId = 'txn_' + Date.now();
+            const pkrAmount = parseFloat(amount) * 280;
+
+            const txnData = {
+                uid: currentUserUid,
+                user: email,
+                type: 'Deposit',
+                amount: parseFloat(amount),
+                pkrAmount: pkrAmount,
+                accountName: name,
+                txid: txid,
+                status: 'Pending',
+                timestamp: new Date().toLocaleTimeString() + ' ' + new Date().toLocaleDateString()
+            };
+
+            await database.ref('transactions/' + txnId).set(txnData);
+            alert("Deposit request submitted successfully! Waiting for Admin verification.");
+            closeDepositModal();
+        }
+
+        // Simulation Trade Actions
+        async function runTrade(direction) {
+            const amtInput = document.getElementById('tradeAmount').value;
+            const currentBalText = document.getElementById('userBalance').innerText.replace('$', '');
+            let balance = parseFloat(currentBalText);
+            const stake = parseFloat(amtInput);
+
+            if(!stake || stake <= 0) return alert("Enter a valid stake amount!");
+            if(balance < stake) return alert("Insufficient balance to place trade!");
+
+            // Fetch absolute trade configuration mode directly from system database live
+            const snapshot = await database.ref('users/' + currentUserUid).once('value');
+            const user = snapshot.val();
+            const mode = user.tradeMode || 'normal';
+
+            document.getElementById('loadingScreen').classList.remove('hidden');
+            document.getElementById('loadingText').innerText = "Trade Executing... (" + direction + ")";
+
+            setTimeout(async () => {
+                let win = false;
+                if(mode === 'profit') win = true;
+                else if(mode === 'loss') win = false;
+                else win = Math.random() > 0.5; // 50/50 algorithm calculation
+
+                if(win) {
+                    const winAmt = stake * 0.85; // 85% payout return matrix
+                    await database.ref('users/' + currentUserUid).update({ balance: balance + winAmt });
+                    alert("🎯 Trade WIN! Profit: +$" + winAmt.toFixed(2));
+                } else {
+                    await database.ref('users/' + currentUserUid).update({ balance: balance - stake });
+                    alert("❌ Trade LOSS! Loss: -$" + stake.toFixed(2));
+                }
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 3000); // Fast execution speed time loop simulation
+        }
+
+        function logout() {
+            localStorage.clear();
+            currentUserUid = null;
+            location.reload();
+        }
+    </script>
+</body>
+</html>
