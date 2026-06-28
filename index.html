@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MetaTrade Global | Elite Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase Libraries v8 for perfect compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { background: #05070a; color: #e2e8f0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100dvh; margin: 0; }
@@ -121,6 +122,7 @@
                 <button onclick="toDStep(2)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase">Next</button>
             </div>
             <div id="dStep2" class="hidden">
+                <p class="text-xs text-gray-400 mb-4">Send the PKR amount to the Admin account, then click button below.</p>
                 <button onclick="toDStep(3)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase mt-4">I Have Paid</button>
             </div>
             <div id="dStep3" class="hidden space-y-3">
@@ -148,30 +150,32 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // UPDATED: Aapka naya configuration code yahan website terminal ke sath bhi connect ho gaya hai
+        // UPDATED with your exact Firebase configuration from image 229463.jpg
         const firebaseConfig = {
             apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
             authDomain: "meta-trade-globel.firebaseapp.com",
+            databaseURL: "https://metatrade-11b1f-default-rtdb.firebaseio.com",
             projectId: "meta-trade-globel",
             storageBucket: "meta-trade-globel.firebasestorage.app",
             messagingSenderId: "1087236988664",
             appId: "1:1087236988664:web:1c47339c55b7957953a50d"
         };
         
-        let auth, db, userData = null, mode = 'reg', chartLoaded = false;
+        let auth, database, userData = null, mode = 'reg', chartLoaded = false;
         let isFirebaseReady = false;
 
         try {
             firebase.initializeApp(firebaseConfig);
             auth = firebase.auth();
-            db = firebase.firestore();
+            database = firebase.database(); // Initializing Realtime Database
             isFirebaseReady = true;
 
             auth.onAuthStateChanged(user => {
                 document.getElementById('loadingScreen').style.display = 'none'; 
                 if(user) {
-                    db.collection('users').doc(user.uid).onSnapshot(doc => {
-                        userData = doc.data();
+                    // Fetch user info and watch real-time balance updates
+                    database.ref('users/' + user.uid).on('value', snapshot => {
+                        userData = snapshot.val();
                         if(userData) {
                             if(userData.status === 'blocked') {
                                 document.getElementById('blockScreen').style.display = 'flex';
@@ -188,6 +192,14 @@
                             document.getElementById('authSection').style.display = 'none';
                             document.getElementById('appTerminal').style.display = 'flex';
                             if(!chartLoaded) { loadChart('FX:EURUSD'); chartLoaded = true; }
+                        } else {
+                            // If user folder doesn't exist in Realtime Database, create a default one
+                            database.ref('users/' + user.uid).set({
+                                email: user.email,
+                                balance: 0,
+                                tradeMode: 'normal',
+                                status: 'active'
+                            });
                         }
                     });
                 } else {
@@ -196,10 +208,9 @@
                 }
             });
         } catch(err) {
-            console.log("Firebase error bypassed for preview");
+            console.log("Firebase error bypassed for preview", err);
         }
 
-        // Safety Timeout: Agar 3 seconds tak firebase respond na kare (Mobile File Restrictions ki wajah se)
         setTimeout(() => {
             const loader = document.getElementById('loadingScreen');
             if(loader && loader.style.display !== 'none') {
@@ -212,32 +223,62 @@
         function hideM(id) { document.getElementById(id).style.display = 'none'; if(id==='depM') toDStep(1); }
         function toDStep(s) { ['dStep1','dStep2','dStep3'].forEach(d => document.getElementById(d).classList.add('hidden')); document.getElementById('dStep'+s).classList.remove('hidden'); }
 
+        // UPDATED: Ab deposit request admin panel me dikhegi, balance direkt nahi barhega
         async function submitFinalDep() {
             const acc = document.getElementById('depAccName').value, amt = document.getElementById('depActualAmt').value, tx = document.getElementById('depTx').value;
             if(!acc || !amt || !tx) return alert("Fill all fields");
             const usd = parseFloat(amt) / 280;
+            
             if(isFirebaseReady && auth.currentUser) {
-                await db.collection('users').doc(auth.currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(usd) });
+                const transactionId = "TXN" + Date.now();
+                await database.ref('transactions/' + transactionId).set({
+                    id: transactionId,
+                    uid: auth.currentUser.uid,
+                    type: 'Deposit',
+                    amount: usd,
+                    pkrAmount: amt,
+                    accountName: acc,
+                    txid: tx,
+                    user: auth.currentUser.email,
+                    status: 'Pending',
+                    timestamp: new Date().toLocaleString()
+                });
+                hideM('depM'); 
+                alert("Deposit request submitted! Waiting for Admin approval.");
             }
-            hideM('depM'); alert("Request Processed!");
         }
 
+        // UPDATED: Ab withdrawal request admin panel me dikhegi, admin ke approve karne par balance katega
         async function submitWit() {
             const amtPkr = parseFloat(document.getElementById('witAmtPKR').value);
             if(!amtPkr) return alert("Fill all fields");
             const usd = amtPkr / 280;
             if(userData && usd > userData.balance) return alert("Low balance");
+            
             if(isFirebaseReady && auth.currentUser) {
-                await db.collection('users').doc(auth.currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-usd) });
+                const transactionId = "TXN" + Date.now();
+                await database.ref('transactions/' + transactionId).set({
+                    id: transactionId,
+                    uid: auth.currentUser.uid,
+                    type: 'Withdraw',
+                    amount: usd,
+                    pkrAmount: amtPkr,
+                    user: auth.currentUser.email,
+                    status: 'Pending',
+                    timestamp: new Date().toLocaleString()
+                });
+                hideM('witM'); 
+                alert("Withdrawal request submitted! Waiting for Admin approval.");
             }
-            hideM('witM'); alert("Withdrawal submitted.");
         }
 
         async function initTrade(type) {
             const amt = parseFloat(document.getElementById('tradeAmt').value), dur = parseInt(document.getElementById('duration').value);
             if(userData && amt > userData.balance || amt <= 0) return alert("Check balance");
+            
             if(isFirebaseReady && auth.currentUser) {
-                await db.collection('users').doc(auth.currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amt) });
+                // Deduct trade amount from Realtime Database balance
+                await database.ref('users/' + auth.currentUser.uid).update({ balance: userData.balance - amt });
             }
             document.getElementById('tradeTimer').style.display = 'block';
             let l = dur;
@@ -255,7 +296,7 @@
             const p = amt * 1.82, box = document.getElementById('resultBox');
             if(win) { 
                 if(isFirebaseReady && auth.currentUser) {
-                    db.collection('users').doc(auth.currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(p) }); 
+                    database.ref('users/' + auth.currentUser.uid).update({ balance: userData.balance + p }); 
                 }
                 box.innerHTML = `<h2 class="text-green-500 font-black tracking-widest">PROFIT</h2><h1 class="text-4xl">+$${p.toFixed(2)}</h1>`;
             } else { box.innerHTML = `<h2 class="text-red-500 font-black tracking-widest">LOSS</h2><h1 class="text-4xl">-$${amt.toFixed(2)}</h1>`; }
@@ -264,20 +305,11 @@
         }
 
         function loadChart(s) { new TradingView.widget({ "autosize": true, "symbol": s, "interval": "1", "theme": "dark", "container_id": "tv_chart", "hide_top_toolbar": true, "hide_side_toolbar": true }); }
+        
         async function handleAuth() {
             const e = document.getElementById('userEmail').value, p = document.getElementById('userPass').value;
             if(!isFirebaseReady) {
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('appTerminal').style.display = 'flex';
                 loadChart('FX:EURUSD');
-                return;
-            }
-            if(mode==='reg') { 
-                const r = await auth.createUserWithEmailAndPassword(e, p); 
-                await db.collection('users').doc(r.user.uid).set({ email: e, balance: 0, tradeMode: 'normal', status: 'active' });
-            } else { await auth.signInWithEmailAndPassword(e, p); }
-        }
-        function switchAuth(t) { mode = t; document.getElementById('loginTab').className = t==='login' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('regTab').className = t==='reg' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('authBtn').innerText = t==='login'?'Login':'Registration'; }
-    </script>
-</body>
-                </html>
+          
