@@ -148,7 +148,15 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAySRA1YSpTpmC8WjnKmDhnNMHkEmkeP50", authDomain: "waqas-47f30.firebaseapp.com", projectId: "waqas-47f30", storageBucket: "waqas-47f30.appspot.com", messagingSenderId: "374104279093", appId: "1:374104279093:web:6e1844b60456c700940364" };
+        // UPDATED: Aapka naya configuration code yahan website terminal ke sath bhi connect ho gaya hai
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
+            authDomain: "meta-trade-globel.firebaseapp.com",
+            projectId: "meta-trade-globel",
+            storageBucket: "meta-trade-globel.firebasestorage.app",
+            messagingSenderId: "1087236988664",
+            appId: "1:1087236988664:web:1c47339c55b7957953a50d"
+        };
         
         let auth, db, userData = null, mode = 'reg', chartLoaded = false;
         let isFirebaseReady = false;
@@ -259,7 +267,6 @@
         async function handleAuth() {
             const e = document.getElementById('userEmail').value, p = document.getElementById('userPass').value;
             if(!isFirebaseReady) {
-                // Agar offline browser me restrict ho toh direct UI pass karein
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('appTerminal').style.display = 'flex';
                 loadChart('FX:EURUSD');
@@ -273,4 +280,5 @@
         function switchAuth(t) { mode = t; document.getElementById('loginTab').className = t==='login' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('regTab').className = t==='reg' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('authBtn').innerText = t==='login'?'Login':'Registration'; }
     </script>
 </body>
-</html>
+    </html>
+    
