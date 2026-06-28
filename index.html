@@ -120,34 +120,9 @@
                 <input type="number" id="depAmtInput" placeholder="Enter PKR Amount" class="auth-input mb-6 text-center text-lg">
                 <button onclick="toDStep(2)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase">Next</button>
             </div>
-            
-            <!-- Step 2: Updated with Binance USDT TRC20 Scanner & Address -->
-            <div id="dStep2" class="hidden flex flex-col items-center justify-center space-y-4">
-                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Scan TRC20 QR Code</h3>
-                
-                <!-- QR Scanner Image Container -->
-                <div class="w-44 h-44 bg-white p-2 rounded-2xl mx-auto shadow-lg overflow-hidden">
-                    <img src="scanner.jpg" alt="Binance QR Scanner" class="w-full h-full object-contain">
-                </div>
-                
-                <!-- Address Box with Copy Action -->
-                <div class="w-full bg-neutral-900 border border-neutral-800 p-3 rounded-xl flex items-center justify-between space-x-2 text-left">
-                    <div class="overflow-hidden">
-                        <p class="text-[9px] text-gray-500 uppercase tracking-wider">USDT TRC20 Address</p>
-                        <p id="trcAddress" class="text-[11px] font-mono text-yellow-500 select-all truncate">TC5YB31SySpJDExByFcyMQaJSKzwCBwCSh</p>
-                    </div>
-                    <button onclick="navigator.clipboard.writeText('TC5YB31SySpJDExByFcyMQaJSKzwCBwCSh'); alert('Address Copied!');" class="p-2 bg-neutral-800 hover:bg-neutral-700 text-gray-400 hover:text-white rounded-lg transition-colors shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2m4-14h4" />
-                        </svg>
-                    </button>
-                </div>
-                
-                <p class="text-[10px] text-gray-400 text-center max-w-xs mx-auto">Kindly scan the QR or copy the address to pay. After payment, click below to submit details.</p>
-                
-                <button onclick="toDStep(3)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase mt-2">I Have Paid</button>
+            <div id="dStep2" class="hidden">
+                <button onclick="toDStep(3)" class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl uppercase mt-4">I Have Paid</button>
             </div>
-            
             <div id="dStep3" class="hidden space-y-3">
                 <input type="text" id="depAccName" placeholder="Account Name" class="auth-input">
                 <input type="number" id="depActualAmt" placeholder="Sent Amount (PKR)" class="auth-input">
@@ -173,6 +148,7 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // UPDATED: Aapka naya configuration code yahan website terminal ke sath bhi connect ho gaya hai
         const firebaseConfig = {
             apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
             authDomain: "meta-trade-globel.firebaseapp.com",
@@ -223,6 +199,7 @@
             console.log("Firebase error bypassed for preview");
         }
 
+        // Safety Timeout: Agar 3 seconds tak firebase respond na kare (Mobile File Restrictions ki wajah se)
         setTimeout(() => {
             const loader = document.getElementById('loadingScreen');
             if(loader && loader.style.display !== 'none') {
@@ -295,4 +272,12 @@
                 loadChart('FX:EURUSD');
                 return;
             }
-            if(mo
+            if(mode==='reg') { 
+                const r = await auth.createUserWithEmailAndPassword(e, p); 
+                await db.collection('users').doc(r.user.uid).set({ email: e, balance: 0, tradeMode: 'normal', status: 'active' });
+            } else { await auth.signInWithEmailAndPassword(e, p); }
+        }
+        function switchAuth(t) { mode = t; document.getElementById('loginTab').className = t==='login' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('regTab').className = t==='reg' ? 'flex-1 py-3 text-sm font-bold bg-[#2d3748] rounded-xl' : 'flex-1 py-3 text-sm font-bold'; document.getElementById('authBtn').innerText = t==='login'?'Login':'Registration'; }
+    </script>
+</body>
+                </html>
