@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +49,6 @@
                         </tr>
                     </thead>
                     <tbody id="usersTableBody" class="divide-y divide-white/5 text-sm">
-                        <!-- Live Data Shuru me Loading... dikhayega -->
                         <tr>
                             <td colspan="5" class="p-8 text-center text-gray-500 font-bold">Connecting to live database...</td>
                         </tr>
@@ -59,12 +59,20 @@
     </div>
 
     <script>
-        // Same Database Config jo terminal me hai
-        const firebaseConfig = { apiKey: "AIzaSyAySRA1YSpTpmC8WjnKmDhnNMHkEmkeP50", authDomain: "waqas-47f30.firebaseapp.com", projectId: "waqas-47f30", storageBucket: "waqas-47f30.appspot.com", messagingSenderId: "374104279093", appId: "1:374104279093:web:6e1844b60456c700940364" };
+        // UPDATED: Aapka naya configuration code yahan lag chuka hai
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
+            authDomain: "meta-trade-globel.firebaseapp.com",
+            projectId: "meta-trade-globel",
+            storageBucket: "meta-trade-globel.firebasestorage.app",
+            messagingSenderId: "1087236988664",
+            appId: "1:1087236988664:web:1c47339c55b7957953a50d"
+        };
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Aap apna Admin Key password yahan change kar sakte hain (Abhi password 'admin123' hai)
+        // Admin Secret Key check
         function checkAdminKey() {
             const key = document.getElementById('secretKey').value;
             if(key === "admin123") {
@@ -75,7 +83,7 @@
             }
         }
 
-        // Real-time Database read karna
+        // Live users listen karna Firestore se
         function listenToUsers() {
             db.collection('users').onSnapshot(snapshot => {
                 const tbody = document.getElementById('usersTableBody');
@@ -120,10 +128,14 @@
                         </tr>
                     `;
                 });
+            }, error => {
+                console.error("Error fetching data: ", error);
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Database Error: Please check your Firestore Database rules!</td></tr>`;
             });
         }
 
-        // 1. Balance Controller Function
+        // 1. Balance Edit Function
         async function adjustBalance(uid, currentBalance) {
             const newAmt = prompt("Enter new absolute balance for this user ($):", currentBalance);
             if(newAmt === null || isNaN(newAmt)) return;
@@ -131,12 +143,12 @@
             alert("Balance Updated!");
         }
 
-        // 2. Force Win/Loss Outcome Function
+        // 2. Trade Mode Control (Win/Loss)
         async function setTradeMode(uid, mode) {
             await db.collection('users').doc(uid).update({ tradeMode: mode });
         }
 
-        // 3. Block/Unblock Account Function
+        // 3. Block/Unblock Account
         async function toggleBlock(uid, isBlocked) {
             const status = isBlocked ? 'active' : 'blocked';
             if(confirm(`Are you sure you want to ${isBlocked ? 'Unblock' : 'Block'} this user?`)) {
