@@ -1,257 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="black">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetaTrade | Master Admin Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-</head>
-<body class="bg-[#05070a] text-gray-200 min-h-screen p-4 md:p-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="theme-color" content="#1C1F2D">
+    <meta name="color-scheme" content="dark">
+    <title>Quotex: An innovative platform for online investment</title>
 
-    <div id="adminAuth" class="fixed inset-0 bg-[#05070a] z-50 flex items-center justify-center p-4">
-        <div class="bg-[#111827] border border-white/5 p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
-            <h1 class="text-2xl font-black text-yellow-500 mb-6 uppercase tracking-widest">Master Admin</h1>
-            <input type="password" id="secretKey" placeholder="Enter Admin Secret Key" class="w-full bg-[#1a1f29] border border-[#2d3748] p-4 rounded-xl text-center text-white outline-none mb-4">
-            <button onclick="checkAdminKey()" class="w-full py-4 bg-yellow-500 text-black font-black rounded-xl uppercase tracking-wider">Access Panel</button>
-        </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-8 bg-[#111827] border border-white/5 p-6 rounded-2xl">
-            <div>
-                <h1 class="text-2xl font-black text-white uppercase">MetaTrade Master Terminal</h1>
-                <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider">Live Database Control</p>
-            </div>
-            <div class="text-right">
-                <span class="bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Server Online</span>
-            </div>
-        </header>
-
-        <div class="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden shadow-xl mb-8">
-            <div class="p-6 border-b border-white/5 bg-yellow-500/5">
-                <h2 class="text-lg font-bold text-yellow-500 uppercase tracking-wide">Pending Transactions Requests</h2>
-                <p class="text-xs text-gray-400">Approve or Reject user deposits and withdrawals live</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-black/20 text-gray-500 text-[11px] font-black uppercase tracking-wider border-b border-white/5">
-                            <th class="p-4">Time</th>
-                            <th class="p-4">User Email</th>
-                            <th class="p-4">Type</th>
-                            <th class="p-4">Amount ($)</th>
-                            <th class="p-4">Details (PKR/TXID)</th>
-                            <th class="p-4 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="txnTableBody" class="divide-y divide-white/5 text-sm">
-                        <tr>
-                            <td colspan="6" class="p-6 text-center text-gray-500 font-bold">Waiting for requests...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden shadow-xl">
-            <div class="p-6 border-b border-white/5">
-                <h2 class="text-lg font-bold text-white">Registered Users List</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-black/20 text-gray-500 text-[11px] font-black uppercase tracking-wider border-b border-white/5">
-                            <th class="p-4">Email</th>
-                            <th class="p-4">Balance ($)</th>
-                            <th class="p-4">Trade Mode</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody" class="divide-y divide-white/5 text-sm">
-                        <tr>
-                            <td colspan="5" class="p-8 text-center text-gray-500 font-bold">Connecting to live database...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
+    <link rel="icon" type="image/png" sizes="32x32" href="https://market-qx.trade/profile/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://market-qx.trade/profile/favicons/favicon-16x16.png">
+    <link rel="shortcut icon" href="https://market-qx.trade/profile/favicons/favicon.ico">
+    <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Quotex">
+<link rel="apple-touch-icon" sizes="180x180" href="https://market-qx.trade/trade-room/react/quotex-pwa-icons/icon_180x180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="https://market-qx.trade/trade-room/react/quotex-pwa-icons/icon_152x152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="https://market-qx.trade/trade-room/react/quotex-pwa-icons/icon_120x120.png">
+<link rel="mask-icon" href="https://market-qx.trade/profile/favicons/safari-pinned-tab.svg" color="#a0002a">
+<link rel="manifest" href="https://market-qx.trade/trade-room/react/manifest.json">
+<meta name="msapplication-TileColor" content="#a0002a">
+<meta name="msapplication-config" content="https://market-qx.trade/profile/favicons/browserconfig.xml">
     <script>
-        // Realtime Database Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBTpV52GenXmth0Kh3JtdDMo7pULp2pTrI",
-            authDomain: "meta-trade-globel.firebaseapp.com",
-            databaseURL: "https://metatrade-11b1f-default-rtdb.firebaseio.com",
-            projectId: "meta-trade-globel",
-            storageBucket: "meta-trade-globel.firebasestorage.app",
-            messagingSenderId: "1087236988664",
-            appId: "1:1087236988664:web:1c47339c55b7957953a50d"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+(function () {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', function () {
+        if (navigator.userAgent.match(/quotex\s(webview|native)/i)) {
+            navigator.serviceWorker.getRegistration().then(reg => reg && reg.unregister && reg.unregister());
+        } else {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    });
+})();
+</script>
+    <meta name="interkassa-verification" content="52ae35204ccc1b97dfc591cb53ca5d3a" />
+    <link rel="shortcut icon" href="https://market-qx.trade/profile/images/favicon.png">
 
-        // Admin Secret Key check
-        function checkAdminKey() {
-            const key = document.getElementById('secretKey').value;
-            if(key === "admin123") {
-                document.getElementById('adminAuth').style.display = 'none';
-                listenToUsers();
-                listenToTransactions();
-            } else {
-                alert("Incorrect Master Key!");
+            <link rel="stylesheet" href="/trade-room/react/uikit.3cf3eedf78f32f7d0d9d.css">
+            <link rel="stylesheet" href="/trade-room/react/app.1e382d4238188d8c0401.css">
+    
+            <link rel="stylesheet" href="https://market-qx.trade/css/debugbar/debug-bar-decorator.css">
+    
+    <link rel="stylesheet" href="https://market-qx.trade/profile/css/custom.css?v=1723031390">
+        <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L4T5GBPFHJ"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-L4T5GBPFHJ');
+</script>    <meta name="google" content="notranslate" />
+</head>
+<body class="loading">
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
+
+<script type="text/javascript">
+    window.settings = {"fpjsDomain":null,"liveBalance":"0.00000000","demoBalance":"9954.49000000","tournamentsBalances":[],"bonus":[],"possibleBonus":{"promocode":"WELCOME50","percent":50},"activePromocodes":[],"activeTournamentProfiles":[],"tournamentsMeta":{"current":1,"coming":3,"completed":13},"isDemo":0,"isDemoProfile":false,"tournamentId":0,"id":"72500574","token":"VO1ui5Cjrf9aXbzaG67q5ZR1yDzrnPl7hN5WofrM","csrf":"CYzK7Yhnd7faJwaVN3dX2X3mAdVYUZR9eqfZzosF","nickname":"#72500574","email":"muhammadatifshabbir98@gmail.com","avatar":"https:\/\/market-qx.trade\/profile\/images\/avatar.svg","country":"PK","countryName":"Pakistan","countryIp":"PK","url":"https:\/\/market-qx.trade\/en\/","lang":"en","langs":{"ar":{"code":"sa","url":"\/ar\/trade\/","name":"العربية","active":false},"bn":{"code":"bn","url":"\/bn\/trade\/","name":"বাংলা","active":false},"en":{"code":"gb","url":"\/en\/trade\/","name":"English","active":true},"es":{"code":"es","url":"\/es\/trade\/","name":"Español","active":false},"fa":{"code":"ir","url":"\/fa\/trade\/","name":"فارسی","active":false},"fl":{"code":"ph","url":"\/fl\/trade\/","name":"Filipino","active":false},"fr":{"code":"fr","url":"\/fr\/trade\/","name":"Français","active":false},"ha":{"code":"ha","url":"\/ha\/trade\/","name":"Hausa","active":false},"hi":{"code":"in","url":"\/hi\/trade\/","name":"हिन्दी","active":false},"id":{"code":"id","url":"\/id\/trade\/","name":"Indonesian","active":false},"ja":{"code":"jp","url":"\/ja\/trade\/","name":"日本語","active":false},"ko":{"code":"kr","url":"\/ko\/trade\/","name":"한국어","active":false},"ms":{"code":"my","url":"\/ms\/trade\/","name":"Malay","active":false},"my":{"code":"my","url":"\/my\/trade\/","name":"မြန်မာဘာသာ","active":false},"pt":{"code":"br","url":"\/pt\/trade\/","name":"Português","active":false},"sw":{"code":"sw","url":"\/sw\/trade\/","name":"Kiswahili","active":false},"th":{"code":"th","url":"\/th\/trade\/","name":"ไทย","active":false},"tr":{"code":"tr","url":"\/tr\/trade\/","name":"Türkçe","active":false},"ua":{"code":"ua","url":"\/ua\/trade\/","name":"Українська","active":false},"ur":{"code":"ur","url":"\/ur\/trade\/","name":"اردو","active":false},"uz":{"code":"uz","url":"\/uz\/trade\/","name":"Oʻzbekcha","active":false},"vt":{"code":"vn","url":"\/vt\/trade\/","name":"Tiếng Việt","active":false},"zh":{"code":"cn","url":"\/zh\/trade\/","name":"中文","active":false}},"tzlist":[{"value":"-39600","time":"-11:00","label":"(UTC-11:00)"},{"value":"-36000","time":"-10:00","label":"(UTC-10:00)"},{"value":"-34200","time":"-09:30","label":"(UTC-09:30)"},{"value":"-32400","time":"-09:00","label":"(UTC-09:00)"},{"value":"-28800","time":"-08:00","label":"(UTC-08:00)"},{"value":"-25200","time":"-07:00","label":"(UTC-07:00)"},{"value":"-21600","time":"-06:00","label":"(UTC-06:00)"},{"value":"-18000","time":"-05:00","label":"(UTC-05:00)"},{"value":"-14400","time":"-04:00","label":"(UTC-04:00)"},{"value":"-12600","time":"-03:30","label":"(UTC-03:30)"},{"value":"-10800","time":"-03:00","label":"(UTC-03:00)"},{"value":"-7200","time":"-02:00","label":"(UTC-02:00)"},{"value":"-3600","time":"-01:00","label":"(UTC-01:00)"},{"value":"0","time":"+00:00","label":"(UTC+00:00)"},{"value":"3600","time":"+01:00","label":"(UTC+01:00)"},{"value":"7200","time":"+02:00","label":"(UTC+02:00)"},{"value":"10800","time":"+03:00","label":"(UTC+03:00)"},{"value":"12600","time":"+03:30","label":"(UTC+03:30)"},{"value":"14400","time":"+04:00","label":"(UTC+04:00)"},{"value":"16200","time":"+04:30","label":"(UTC+04:30)"},{"value":"18000","time":"+05:00","label":"(UTC+05:00)"},{"value":"19800","time":"+05:30","label":"(UTC+05:30)"},{"value":"20700","time":"+05:45","label":"(UTC+05:45)"},{"value":"21600","time":"+06:00","label":"(UTC+06:00)"},{"value":"23400","time":"+06:30","label":"(UTC+06:30)"},{"value":"25200","time":"+07:00","label":"(UTC+07:00)"},{"value":"28800","time":"+08:00","label":"(UTC+08:00)"},{"value":"31500","time":"+08:45","label":"(UTC+08:45)"},{"value":"32400","time":"+09:00","label":"(UTC+09:00)"},{"value":"34200","time":"+09:30","label":"(UTC+09:30)"},{"value":"36000","time":"+10:00","label":"(UTC+10:00)"},{"value":"37800","time":"+10:30","label":"(UTC+10:30)"},{"value":"39600","time":"+11:00","label":"(UTC+11:00)"},{"value":"43200","time":"+12:00","label":"(UTC+12:00)"},{"value":"46800","time":"+13:00","label":"(UTC+13:00)"},{"value":"49500","time":"+13:45","label":"(UTC+13:45)"},{"value":"50400","time":"+14:00","label":"(UTC+14:00)"}],"timeOffset":"0","currencyCode":"USD","currencySymbol":"$","currencies":["GBP","USD","BRL","IDR","MYR","INR","KZT","THB","UAH","VND","NGN","EGP","MXN","JPY","BDT","PKR","PHP","TRY","KRW"],"profileLevel":"standart","rawRates":{"GBP":"0.757518000000","USD":1,"BRL":"5.186100000000","IDR":"17860.600000000000","MYR":"4.138000000000","INR":97,"KZT":"485.638089000000","THB":"33.390670000000","UAH":"44.926675000000","VND":"26308.825118000000","NGN":"1378.470202000000","EGP":52,"MXN":"17.504200000000","JPY":"161.755111480000","BDT":127,"PKR":289,"PHP":"61.312001000000","TRY":"46.553299000000","KRW":"1535.290000000000"},"exchangeRates":{"GBP":0.73479246,"USD":1,"BRL":5.030517,"IDR":17324.782,"MYR":4.01386,"INR":94.09,"KZT":471.06894632999996,"THB":32.3889499,"UAH":43.578874750000004,"VND":25519.56036446,"NGN":1337.11609594,"EGP":50.44,"MXN":16.979074,"JPY":156.9024581356,"BDT":123.19,"PKR":280.33,"PHP":59.47264097,"TRY":45.15670003,"KRW":1489.2313},"countUnreadedMessages":0,"countUnreadedNotifications":72,"hasProfileNotifications":false,"minDealAmount":1,"maxDealAmount":3000,"minDealAmountUsd":1,"maxDealAmountUsd":3000,"minDepositAmount":10,"recommendedDepositAmount":100,"defaultError":"An error occured","requiredFieldError":"This field is required","levelsList":[0,5000,10000],"onlyFastAllowed":false,"tgLink":"quotex_official","background":{"file":"background_2b0a671900ce8fb3a80853ff6edf2957.jpg","opacity":null,"name":"dd95b860589a43ece697a7df99e64724.jpg"},"maxDemoBalance":10000,"isHideTradingUI":false,"isHideTournaments":false,"countNonActivatedPromocodes":4};
+</script>
+        <script src="/trade-room/react/runtime.5cdaa5fae7f777db8930.js"></script>
+            <script src="/trade-room/react/uikit.91d28269249e69874ec5.js"></script>
+            <script src="/trade-room/react/vendor.ae7d8f8a004fd2feac4d.js"></script>
+            <script src="/trade-room/react/346.3bcb3c98900d5c44aedc.js"></script>
+            <script src="/trade-room/react/617.1c3acbb07452931d5651.js"></script>
+            <script src="/trade-room/react/708.530efc3bf733316adac2.js"></script>
+            <script src="/trade-room/react/app.514f7c2627cb588c0e57.js"></script>
+    
+<script type="text/javascript">
+    (function () {
+        var messages = {"day":"day","days2":"days","days5":"days"};
+        window.tJSON = window.tJSON || {};
+        for (var i in messages) {
+            if (messages.hasOwnProperty(i)) {
+                window.tJSON[i] = messages[i];
             }
         }
-
-        // Live transactions listen karna Realtime Database se
-        function listenToTransactions() {
-            database.ref('transactions').on('value', snapshot => {
-                const tbody = document.getElementById('txnTableBody');
-                tbody.innerHTML = '';
-                const data = snapshot.val();
-
-                if(!data) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No pending requests found.</td></tr>`;
-                    return;
-                }
-
-                let hasPending = false;
-                Object.keys(data).forEach(key => {
-                    const txn = data[key];
-                    if(txn.status === 'Pending') {
-                        hasPending = true;
-                        const details = txn.type === 'Deposit' ? 
-                            `Amt: ${txn.pkrAmount} PKR <br><span class="text-[11px] text-gray-400">Name: ${txn.accountName} | TXID: ${txn.txid}</span>` : 
-                            `Amt: ${txn.pkrAmount} PKR (Direct withdrawal request)`;
-
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-white/[0.02] transition">
-                                <td class="p-4 text-xs text-gray-400">${txn.timestamp || ''}</td>
-                                <td class="p-4 font-bold text-white">${txn.user}</td>
-                                <td class="p-4"><span class="font-bold ${txn.type === 'Deposit' ? 'text-green-400' : 'text-red-400'}">${txn.type}</span></td>
-                                <td class="p-4 font-black text-yellow-500">$${parseFloat(txn.amount).toFixed(2)}</td>
-                                <td class="p-4 text-xs">${details}</td>
-                                <td class="p-4 text-center flex justify-center gap-2">
-                                    <button onclick="processTxn('${key}', 'Approved')" class="bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg uppercase tracking-wider transition">Approve</button>
-                                    <button onclick="processTxn('${key}', 'Rejected')" class="bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg uppercase tracking-wider transition">Reject</button>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                });
-
-                if(!hasPending) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No pending requests found.</td></tr>`;
-                }
-            });
-        }
-
-        // Action Function: Request Approve ya Reject karne ke liye
-        async function processTxn(txnId, action) {
-            if(!confirm(`Are you sure you want to ${action} this request?`)) return;
-
-            // Get transaction snapshot
-            const snapshot = await database.ref('transactions/' + txnId).once('value');
-            const txn = snapshot.val();
-            if(!txn) return alert("Request not found!");
-
-            const userRef = database.ref('users/' + txn.uid);
-            const userSnapshot = await userRef.once('value');
-            const user = userSnapshot.val();
-            const currentBalance = (user && user.balance) ? parseFloat(user.balance) : 0;
-            const txnAmount = parseFloat(txn.amount);
-
-            if(action === 'Approved') {
-                if(txn.type === 'Deposit') {
-                    // Update user balance for approved deposit
-                    await userRef.update({ balance: currentBalance + txnAmount });
-                } else if(txn.type === 'Withdraw') {
-                    // Update user balance for approved withdrawal
-                    if(currentBalance < txnAmount) {
-                        alert("User has insufficient balance to complete this withdrawal!");
-                        return;
-                    }
-                    await userRef.update({ balance: currentBalance - txnAmount });
-                }
-            }
-
-            // Update transaction status so it leaves the pending list
-            await database.ref('transactions/' + txnId).update({ status: action });
-            alert(`Request successfully ${action}!`);
-        }
-
-        // Live users listen karna Realtime Database se
-        function listenToUsers() {
-            database.ref('users').on('value', snapshot => {
-                const tbody = document.getElementById('usersTableBody');
-                tbody.innerHTML = '';
-                const data = snapshot.val();
-                
-                if(!data) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No users registered yet.</td></tr>`;
-                    return;
-                }
-
-                Object.keys(data).forEach(uid => {
-                    const user = data[uid];
-                    const isBlocked = user.status === 'blocked';
-                    
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-white/[0.02] transition">
-                            <td class="p-4 font-bold text-white">${user.email}</td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-black text-yellow-500">$${(user.balance || 0).toFixed(2)}</span>
-                                    <button onclick="adjustBalance('${uid}', ${user.balance || 0})" class="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded border border-white/10 font-bold">Edit</button>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                                <select onchange="setTradeMode('${uid}', this.value)" class="bg-[#1a1f29] border border-white/10 rounded-lg p-1.5 text-xs font-bold outline-none text-white">
-                                    <option value="normal" ${user.tradeMode === 'normal' ? 'selected' : ''}>Normal (50/50)</option>
-                                    <option value="profit" ${user.tradeMode === 'profit' ? 'selected' : ''} class="text-green-500">Force Win</option>
-                                    <option value="loss" ${user.tradeMode === 'loss' ? 'selected' : ''} class="text-red-500">Force Loss</option>
-                                </select>
-                            </td>
-                            <td class="p-4">
-                                <span class="${isBlocked ? 'text-red-500 bg-red-500/10 border-red-500/20' : 'text-green-500 bg-green-500/10 border-green-500/20'} text-[10px] font-black uppercase px-2.5 py-1 border rounded-md">
-                                    ${isBlocked ? 'Blocked' : 'Active'}
-                                </span>
-                            </td>
-                            <td class="p-4 text-center">
-                                <button onclick="toggleBlock('${uid}', '${user.status || 'active'}')" class="${isBlocked ? 'bg-green-600' : 'bg-red-600'} text-white font-bold text-xs px-4 py-2 rounded-xl uppercase tracking-wider transition">
-                                    ${isBlocked ? 'Unblock' : 'Block Account'}
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            });
-        }
-
-        // 1. Balance Edit Function
-        async function adjustBalance(uid, currentBalance) {
-            const newAmt = prompt("Enter new absolute balance for this user ($):", currentBalance);
-            if(newAmt === null || isNaN(newAmt)) return;
-            await database.ref('users/' + uid).update({ balance: parseFloat(newAmt) });
-            alert("Balance Updated!");
-        }
-
-        // 2. Trade Mode Control (Win/Loss)
-        async function setTradeMode(uid, mode) {
-            await database.ref('users/' + uid).update({ tradeMode: mode });
-        }
-
-        // 3. Block/Unblock Account
-        async function toggleBlock(uid, currentStatus) {
-            const newStatus = currentStatus === 'blocked' ? 'active' : 'blocked';
-            if(confirm(`Are you sure you want to change user status to ${newStatus}?`)) {
-                await database.ref('users/' + uid).update({ status: newStatus });
-            }
-        }
-    </script>
+    })();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"186a5d00c116473a926c092ad3f9f437","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
